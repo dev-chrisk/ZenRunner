@@ -3,47 +3,81 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>ZenRunner</title>
+    <title>Unity Web Player | ZenRunner</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <style>
       html, body {
         margin: 0;
         padding: 0;
         height: 100%;
-        background: #000;
+        width: 100%;
+        background: black;
         overflow: hidden;
       }
+
       #unity-container {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
         width: 100%;
         height: 100%;
-        position: fixed;
-        top: 0;
-        left: 0;
       }
+
       #unity-canvas {
         width: 100%;
         height: 100%;
         display: block;
-        background: #231F20;
+        background: black;
       }
+
       #unity-loading-bar {
-        width: 100%;
         position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        text-align: center;
-        color: white;
-        font-family: sans-serif;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        height: 4px;
+        background: #222;
       }
+
       #unity-progress-bar-empty {
-        width: 50%;
-        height: 20px;
-        margin: 10px auto;
+        width: 100%;
+        height: 100%;
         background: #555;
       }
+
       #unity-progress-bar-full {
-        height: 100%;
         width: 0%;
-        background: #fff;
+        height: 100%;
+        background: #08f;
+      }
+
+      #unity-warning {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        color: white;
+        font-family: sans-serif;
+        text-align: center;
+        padding: 5px;
+      }
+
+      #unity-fullscreen-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 20;
+        background: #08f;
+        color: white;
+        font-family: sans-serif;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      #unity-fullscreen-button:hover {
+        background: #06c;
       }
     </style>
   </head>
@@ -51,13 +85,14 @@
     <div id="unity-container">
       <canvas id="unity-canvas" tabindex="-1"></canvas>
       <div id="unity-loading-bar">
-        <div>Loading ZenRunner...</div>
         <div id="unity-progress-bar-empty">
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
       <div id="unity-warning"></div>
+      <button id="unity-fullscreen-button">Fullscreen</button>
     </div>
+
     <script>
       var canvas = document.querySelector("#unity-canvas");
 
@@ -68,10 +103,10 @@
         }
         var div = document.createElement('div');
         div.innerHTML = msg;
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
         warningBanner.appendChild(div);
-        if (type != 'error') {
+        if (type === 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type === 'warning') div.style = 'background: yellow; padding: 10px;';
           setTimeout(() => {
             warningBanner.removeChild(div);
             updateBannerVisibility();
@@ -81,16 +116,16 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/Build.loader.js";
+      var loaderUrl = buildUrl + "/Neuer Ordner.loader.js";
       var config = {
-        dataUrl: buildUrl + "/Build.data.unityweb",
-        frameworkUrl: buildUrl + "/Build.framework.js.unityweb",
-        codeUrl: buildUrl + "/Build.wasm.unityweb",
+        dataUrl: buildUrl + "/Neuer Ordner.data.unityweb",
+        frameworkUrl: buildUrl + "/Neuer Ordner.framework.js.unityweb",
+        codeUrl: buildUrl + "/Neuer Ordner.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "ZenRunner",
         productVersion: "0.1.0",
-        showBanner: unityShowBanner,
+        showBanner: unityShowBanner
       };
 
       document.querySelector("#unity-loading-bar").style.display = "block";
@@ -99,14 +134,20 @@
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = (100 * progress) + "%";
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
         }).then((unityInstance) => {
           document.querySelector("#unity-loading-bar").style.display = "none";
+
+          document.querySelector("#unity-fullscreen-button").onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+
+          // Optional: Fullscreen direkt beim Laden aktivieren (meistens blockiert)
+          // unityInstance.SetFullscreen(1);
         }).catch((message) => {
           alert(message);
         });
       };
-
       document.body.appendChild(script);
     </script>
   </body>
